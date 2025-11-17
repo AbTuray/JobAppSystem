@@ -1,0 +1,49 @@
+<div class="container mt-4">
+  <h2>Available Jobs</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Salary</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let job of jobs">
+        <td>{{ job.title }}</td>
+        <td>{{ job.location }}</td>
+        <td>{{ job.salary }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm" (click)="apply(job.id!)">Apply</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <h3>My Applications</h3>
+  <table class="table table-bordered mt-2">
+    <thead>
+      <tr>
+        <th>Application ID</th>
+        <th>Job Title</th>
+        <th>Status</th>
+        <th>Applied Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let app of myApplications">
+        <td>{{ app.id }}</td>
+        <td>{{ app.job?.title || app.jobId || 'N/A' }}</td>
+        <td>{{ app.status }}</td>
+        <td>{{ app.appliedDate }}</td>
+        <td>
+          <button *ngIf="app.status === 'Pending'" class="btn btn-danger btn-sm" (click)="deleteApplication(app.id!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

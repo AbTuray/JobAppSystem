@@ -1,0 +1,66 @@
+<div class="container mt-4">
+  <h2>Admin Dashboard</h2>
+
+  <h4 class="mt-3">Employers</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of employers">
+        <td>{{ e.id }}</td>
+        <td>{{ e.firstName }} {{ e.lastName }}</td>
+        <td>{{ e.email }}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" (click)="deleteEmployer(e.id!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 class="mt-4">Candidates</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of candidates">
+        <td>{{ c.id }}</td>
+        <td>{{ c.firstName }} {{ c.lastName }}</td>
+        <td>{{ c.email }}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" (click)="deleteCandidate(c.id!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 class="mt-4">Pending Applications</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr><th>App ID</th><th>Candidate ID</th><th>Job ID</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of pendingApplications">
+        <td>{{ a.id }}</td>
+        <td>{{ a.candidate?.id || a.candidateId }}</td>
+        <td>{{ a.job?.id || a.jobId }}</td>
+        <td>
+          <button class="btn btn-success btn-sm" (click)="approveApplication(a.id!)">Approve</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 class="mt-4">All Jobs</h4>
+  <table class="table table-hover">
+    <thead><tr><th>Title</th><th>Employer</th><th>Location</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let j of jobs">
+        <td>{{ j.title }}</td>
+        <td>{{ j.employer?.firstName || j.employer?.email }}</td>
+        <td>{{ j.location }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
