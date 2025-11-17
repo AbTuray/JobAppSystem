@@ -1,83 +1,119 @@
+// src/main/java/com/jobportal/controller/CandidateController.java
 package com.jobportal.controller;
 
-import com.jobportal.dto.CandidateRegistrationDTO;
-import com.jobportal.dto.CandidateLoginDTO;
-import com.jobportal.entity.Candidate;
+import com.jobportal.dto.ApplicationDTO;
+import com.jobportal.dto.ApplicationResponseDTO;
+import com.jobportal.dto.JobDTO;
 import com.jobportal.entity.Job;
-import com.jobportal.entity.Application;
-import com.jobportal.service.*;
+import com.jobportal.entity.User;
+import com.jobportal.service.ApplicationManager;
+import com.jobportal.service.JobManager;
+import com.jobportal.service.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/candidate")
 public class CandidateController {
 
     @Autowired
-    private CandidateManager candidateService;
+    private JobManager jobManager;
 
     @Autowired
-    private JobManager jobService;
+    private ApplicationManager applicationManager;
 
     @Autowired
-    private ApplicationManager applicationService;
+    private UserManager userManager;
 
-    // Register Candidate
-    @PostMapping("/register")
-    public Candidate registerCandidate(@RequestBody CandidateRegistrationDTO dto) {
-        return candidateService.registerCandidate(dto);
+    // === DASHBOARD ===
+    @GetMapping("/dashboard")
+    public String dashboard(Model model, Principal principal) {
+        User candidate = userManager.findByEmail(principal.getName());
+        List<ApplicationResponseDTO> applications = applicationManager.getApplicationsByCandidate(candidate);
+        model.addAttribute("applications", applications);
+        model.addAttribute("candidate", candidate);
+        return "candidate/dashboard";
     }
 
-    // Login Candidate
-    @PostMapping("/login")
-    public Candidate loginCandidate(@RequestBody CandidateLoginDTO dto) {
-        return candidateService.loginCandidate(dto);
-    }
-
-    // Search Jobs
+    // === SEARCH JOBS ===
     @GetMapping("/jobs")
-    public List<Job> searchJobs(@RequestParam(required = false) String keyword) {
-        if (keyword == null || keyword.isEmpty()) {
-            return jobService.getAllJobs();
+    public String searchJobs(@RequestParam(required = false) String keyword, Model model) {
+        List<JobDTO> jobs = (keyword == null || keyword.isEmpty())
+                ? jobManager.getActiveJobs()
+                : jobManager.searchJobs(keyword);
+        model.addAttribute("jobs", jobs);
+        model.addAttribute("keyword", keyword);
+        return "candidate/jobs";
+    }
+
+    // === APPLY TO JOB ===
+    @GetMapping("/job/apply/{jobId}")
+    public String showApplyForm(@PathVariable Long jobId, Model model, Principal principal) {
+        JobDTO jobDTO = jobManager.getJobById(jobId);
+        if (jobDTO == null || !jobDTO.isActive()) {
+            return "redirect:/candidate/jobs?error=invalid";
         }
-        return jobService.getAllJobs().stream()
-                .filter(j -> j.getTitle().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
+
+        User candidate = userManager.findByEmail(principal.getName());
+
+        // CORRECT WAY: Create Job object and set ID manually
+        Job job = new Job();
+        job.setId(jobId);
+
+        boolean hasApplied = applicationManager.hasApplied(candidate, job);
+        if (hasApplied) {
+            return "redirect:/candidate/jobs?error=alreadyapplied";
+        }
+
+        model.addAttribute("job", jobDTO);
+        model.addAttribute("application", new ApplicationDTO());
+        return "candidate/apply";
     }
 
-    // Apply for Job
-    @PostMapping("/apply")
-    public Application applyForJob(@RequestParam Long candidateId, @RequestParam Long jobId) {
-        Candidate candidate = candidateService.getCandidateById(candidateId);
-        Job job = jobService.getJobById(jobId);
-        return applicationService.applyForJob(candidate, job);
+    @PostMapping("/job/apply/{jobId}")
+    public String applyToJob(@PathVariable Long jobId, @ModelAttribute ApplicationDTO applicationDTO, Principal principal) {
+        applicationDTO.setJobId(jobId);
+        User candidate = userManager.findByEmail(principal.getName());
+        applicationManager.applyToJob(applicationDTO, candidate);
+        return "redirect:/candidate/dashboard?applied=true";
     }
 
-    // View Applications
-    @GetMapping("/applications")
-    public List<Application> viewApplications(@RequestParam Long candidateId) {
-        Candidate candidate = candidateService.getCandidateById(candidateId);
-        return applicationService.getApplicationsByCandidate(candidate);
+    // === EDIT APPLICATION ===
+    @GetMapping("/application/edit/{appId}")
+    public String showEditApplication(@PathVariable Long appId, Model model, Principal principal) {
+        User candidate = userManager.findByEmail(principal.getName());
+        // We'll fetch via service to validate ownership
+        List<ApplicationResponseDTO> apps = applicationManager.getApplicationsByCandidate(candidate);
+        ApplicationResponseDTO app = apps.stream()
+                .filter(a -> a.getId().equals(appId))
+                .findFirst()
+                .orElse(null);
+
+        if (app == null || !"PENDING".equals(app.getStatus())) {
+            return "redirect:/candidate/dashboard?error=invalid";
+        }
+
+        model.addAttribute("application", app);
+        return "candidate/edit-application";
     }
 
-    // Delete Application
-    @DeleteMapping("/application/{id}")
-    public String deleteApplication(@PathVariable Long id) {
-        applicationService.deleteApplication(id);
-        return "Application deleted successfully";
+    @PostMapping("/application/edit/{appId}")
+    public String updateApplication(@PathVariable Long appId, @RequestParam String coverLetter, Principal principal) {
+        User candidate = userManager.findByEmail(principal.getName());
+        applicationManager.updateApplication(appId, coverLetter, candidate);
+        return "redirect:/candidate/dashboard";
     }
 
-    @GetMapping("/job/{jobId}/applications")
-    public List<Application> getApplicationsByJob(@PathVariable Long jobId) {
-        Job job = jobService.getJobById(jobId);
-        return applicationService.getApplicationsByJob(job);
-    }
-
-    // Update application status (accept applicant)
-    @PutMapping("/application/{id}/status")
-    public Application updateApplicationStatus(@PathVariable Long id, @RequestParam String status) {
-        return applicationService.updateApplicationStatus(id, status);
+    // === DELETE APPLICATION ===
+    @PostMapping("/application/delete/{appId}")
+    public String deleteApplication(@PathVariable Long appId, Principal principal) {
+        User candidate = userManager.findByEmail(principal.getName());
+        applicationManager.deleteApplication(appId, candidate);
+        return "redirect:/candidate/dashboard";
     }
 }

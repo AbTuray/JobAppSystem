@@ -1,3 +1,4 @@
+// src/main/java/com/jobportal/entity/Application.java
 package com.jobportal.entity;
 
 import jakarta.persistence.*;
@@ -11,57 +12,42 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "applied_date")
+    private LocalDate appliedDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String coverLetter;
+
+    private String status = "PENDING"; // PENDING, APPROVED, REJECTED, ACCEPTED, REMOVED
+
+    // Relationships
     @ManyToOne
-    @JoinColumn(name = "candidate_id")
-    private Candidate candidate;
+    @JoinColumn(name = "candidate_id", nullable = false)
+    private User candidate;
 
     @ManyToOne
-    @JoinColumn(name = "job_id")
+    @JoinColumn(name = "job_id", nullable = false)
     private Job job;
 
-    private String status; // Pending, Approved, Rejected
-
-    private LocalDate appliedDate = LocalDate.now();
+    // Constructors
+    public Application() {}
 
     // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public LocalDate getAppliedDate() { return appliedDate; }
+    public void setAppliedDate(LocalDate appliedDate) { this.appliedDate = appliedDate; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCoverLetter() { return coverLetter; }
+    public void setCoverLetter(String coverLetter) { this.coverLetter = coverLetter; }
 
-    public Candidate getCandidate() {
-        return candidate;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setCandidate(Candidate candidate) {
-        this.candidate = candidate;
-    }
+    public User getCandidate() { return candidate; }
+    public void setCandidate(User candidate) { this.candidate = candidate; }
 
-    public Job getJob() {
-        return job;
-    }
-
-    public void setJob(Job job) {
-        this.job = job;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDate getAppliedDate() {
-        return appliedDate;
-    }
-
-    public void setAppliedDate(LocalDate appliedDate) {
-        this.appliedDate = appliedDate;
-    }
+    public Job getJob() { return job; }
+    public void setJob(Job job) { this.job = job; }
 }

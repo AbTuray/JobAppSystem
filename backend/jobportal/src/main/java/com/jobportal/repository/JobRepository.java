@@ -1,15 +1,25 @@
+// src/main/java/com/jobportal/repository/JobRepository.java
 package com.jobportal.repository;
 
 import com.jobportal.entity.Job;
-import com.jobportal.entity.Employer;
+import com.jobportal.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
-@Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-    List<Job> findByEmployer(Employer employer);
+    // Find all jobs posted by a specific employer
+    List<Job> findByEmployer(User employer);
 
-    List<Job> findByTitleContainingIgnoreCase(String keyword); // For search by candidate
+    // Find all active jobs (for public search)
+    List<Job> findByActiveTrue();
+
+    // Find active jobs with title or description containing keyword (case-insensitive)
+    @Query("SELECT j FROM Job j WHERE j.active = true AND " +
+            "(LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Job> searchActiveJobs(@Param("keyword") String keyword);
 }

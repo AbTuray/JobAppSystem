@@ -1,118 +1,91 @@
+// src/main/java/com/jobportal/controller/AuthController.java
 package com.jobportal.controller;
 
-import com.jobportal.dto.CandidateRegistrationDTO;
-import com.jobportal.dto.EmployerRegistrationDTO;
-import com.jobportal.dto.LoginDTO;
-import com.jobportal.entity.Candidate;
-import com.jobportal.entity.Employer;
-import com.jobportal.security.JwtUtil;
-import com.jobportal.service.AdminManager;
-import com.jobportal.service.CandidateManager;
-import com.jobportal.service.EmployerManager;
+import com.jobportal.dto.UserRegistrationDTO;
+import com.jobportal.entity.User;
+import com.jobportal.service.UserManager;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.security.Principal;
 
-@RestController
-@RequestMapping("/api/auth")
+@Controller
+@RequestMapping
 public class AuthController {
 
     @Autowired
-    private EmployerManager employerService;
+    private UserManager userManager;
 
-    @Autowired
-    private CandidateManager candidateService;
-
-    @Autowired
-    private AdminManager adminService;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder; // <-- Autowire it here
-
-    @PostMapping("/register/employer")
-    public ResponseEntity<?> registerEmployer(@RequestBody EmployerRegistrationDTO dto) {
-        return ResponseEntity.ok(employerService.registerEmployer(dto));
+    // === HOME PAGE ===
+    @GetMapping("/")
+    public String home() {
+        return "home"; // home.html - MainDashboard
     }
 
-    @PostMapping("/register/candidate")
-    public ResponseEntity<?> registerCandidate(@RequestBody CandidateRegistrationDTO dto) {
-        return ResponseEntity.ok(candidateService.registerCandidate(dto));
+    // === REGISTER PAGE ===
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("user", new UserRegistrationDTO());
+        return "register"; // register.html
     }
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO dto) {
-
-        // ADMIN LOGIN (HARD CODED)
-        if (dto.getEmail().equals("admin@job.com") && dto.getPassword().equals("admin123")) {
-
-            String token = jwtUtil.generateToken("admin@job.com", "ADMIN");
-
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "role", "ADMIN",
-                    "id", 0
-            ));
+    @PostMapping("/register")
+    public String registerUser(@Valid @ModelAttribute("user") UserRegistrationDTO registrationDTO,
+                               BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "register";
         }
 
-        // EMPLOYER LOGIN
-        Employer emp = employerService.findByEmail(dto.getEmail());
-        if (emp != null && passwordEncoder.matches(dto.getPassword(), emp.getPassword())) {
-
-            String token = jwtUtil.generateToken(emp.getEmail(), "EMPLOYER");
-
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "role", "EMPLOYER",
-                    "id", emp.getId()
-            ));
+        try {
+            userManager.registerUser(registrationDTO);
+            model.addAttribute("success", "Registration successful! Please login.");
+            return "redirect:/login";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            return "register";
         }
-
-        // CANDIDATE LOGIN
-        Candidate cand = candidateService.findByEmail(dto.getEmail());
-        if (cand != null && passwordEncoder.matches(dto.getPassword(), cand.getPassword())) {
-
-            String token = jwtUtil.generateToken(cand.getEmail(), "CANDIDATE");
-
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "role", "CANDIDATE",
-                    "id", cand.getId()
-            ));
-        }
-
-        return ResponseEntity.status(401).body("Invalid Credentials");
     }
 
+    // === LOGIN PAGE ===
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "login"; // login.html
+    }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(@RequestBody LoginDTO dto) {
-//
-//        // ADMIN HARD-CODED
-//        if (dto.getEmail().equals("admin@job.com") && dto.getPassword().equals("admin123")) {
-//            return ResponseEntity.ok(Map.of("role", "ADMIN", "id", 0));
-//        }
-//
-//        // Employer login
-//        Employer emp = employerService.findByEmail(dto.getEmail()); // <-- Use findByEmail
-//        if (emp != null && passwordEncoder.matches(dto.getPassword(), emp.getPassword())) {
-//            return ResponseEntity.ok(Map.of("role", "EMPLOYER", "id", emp.getId()));
-//        }
-//
-//        // Candidate login
-//        Candidate cand = candidateService.findByEmail(dto.getEmail()); // <-- Use findByEmail
-//        if (cand != null && passwordEncoder.matches(dto.getPassword(), cand.getPassword())) {
-//            return ResponseEntity.ok(Map.of("role", "CANDIDATE", "id", cand.getId()));
-//        }
-//
-//        return ResponseEntity.status(401).body("Invalid Credentials");
-//    }
+    // === REDIRECT AFTER LOGIN BASED ON USER TYPE ===
+    @GetMapping("/redirectDashboard")
+    public String redirectAfterLogin(Principal principal) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        User user = userManager.findByEmail(principal.getName());
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+
+        return switch (user.getUserType()) {
+            case "CANDIDATE" -> "redirect:/candidate/dashboard";
+            case "EMPLOYER" -> "redirect:/employer/dashboard";
+            case "ADMIN" -> "redirect:/admin/dashboard"; // In-memory admin will be handled in security
+            default -> "redirect:/login?error";
+        };
+    }
+
+    // === LOGOUT (handled by Spring Security) ===
+    // POST /logout -> redirects to /login?logout
+
+    // === API: Check if email exists (for frontend validation) ===
+    @GetMapping("/api/check-email")
+    @ResponseBody
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean exists = userManager.existsByEmail(email);
+        return ResponseEntity.ok().body("{\"exists\":" + exists + "}");
+    }
 }

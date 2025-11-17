@@ -1,46 +1,23 @@
-// src/main/java/com/jobportal/entity/Job.java
-package com.jobportal.entity;
+// src/main/java/com/jobportal/dto/JobDTO.java
+package com.jobportal.dto;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
 
-@Entity
-@Table(name = "jobs")
-public class Job {
+public class JobDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(columnDefinition = "TEXT")
     private String requirements;
-
     private String location;
-
     private String salaryRange;
-
-    @Column(name = "posted_date")
     private LocalDate postedDate;
-
-    private boolean active = true;
-
-    // Relationship
-    @ManyToOne
-    @JoinColumn(name = "employer_id", nullable = false)
-    private User employer;
-
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
-    private List<Application> applications;
+    private boolean active;
+    private Long employerId;
+    private String employerName; // "First Last - Office"
 
     // Constructors
-    public Job() {}
+    public JobDTO() {}
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -67,9 +44,9 @@ public class Job {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 
-    public User getEmployer() { return employer; }
-    public void setEmployer(User employer) { this.employer = employer; }
+    public Long getEmployerId() { return employerId; }
+    public void setEmployerId(Long employerId) { this.employerId = employerId; }
 
-    public List<Application> getApplications() { return applications; }
-    public void setApplications(List<Application> applications) { this.applications = applications; }
+    public String getEmployerName() { return employerName; }
+    public void setEmployerName(String employerName) { this.employerName = employerName; }
 }
