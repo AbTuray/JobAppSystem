@@ -1,75 +1,86 @@
-// src/main/java/com/jobportal/entity/Job.java
 package com.jobportal.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.util.List;
+import jakarta.validation.constraints.NotBlank;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "jobs")
 public class Job {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank
     private String title;
 
-    @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(columnDefinition = "TEXT")
-    private String requirements;
 
     private String location;
 
-    private String salaryRange;
+    private LocalDateTime createdAt;
 
-    @Column(name = "posted_date")
-    private LocalDate postedDate;
-
-    private boolean active = true;
-
-    // Relationship
     @ManyToOne
-    @JoinColumn(name = "employer_id", nullable = false)
-    private User employer;
+    @JoinColumn(name = "employer_id")
+    private Employer employer;
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
-    private List<Application> applications;
+    // constructors, getters, setters
 
-    // Constructors
-    public Job() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Job() {
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getRequirements() { return requirements; }
-    public void setRequirements(String requirements) { this.requirements = requirements; }
+    public String getTitle() {
+        return title;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public String getSalaryRange() { return salaryRange; }
-    public void setSalaryRange(String salaryRange) { this.salaryRange = salaryRange; }
+    public String getDescription() {
+        return description;
+    }
 
-    public LocalDate getPostedDate() { return postedDate; }
-    public void setPostedDate(LocalDate postedDate) { this.postedDate = postedDate; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public String getLocation() {
+        return location;
+    }
 
-    public User getEmployer() { return employer; }
-    public void setEmployer(User employer) { this.employer = employer; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public List<Application> getApplications() { return applications; }
-    public void setApplications(List<Application> applications) { this.applications = applications; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Employer getEmployer() {
+        return employer;
+    }
+
+    public void setEmployer(Employer employer) {
+        this.employer = employer;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
 }
