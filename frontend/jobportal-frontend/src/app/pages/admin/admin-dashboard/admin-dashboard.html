@@ -1,0 +1,90 @@
+<div class="container mt-4">
+  <h2 class="mb-3">Admin Dashboard</h2>
+
+  <!-- JOBS TABLE -->
+  <h4>All Jobs</h4>
+  <table class="table table-bordered table-hover mb-4">
+    <thead class="table-light">
+    <tr>
+      <th>Title</th>
+      <th>Location</th>
+      <th>Salary</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let job of jobs">
+      <td>{{job.title}}</td>
+      <td>{{job.location}}</td>
+      <td>{{job.salary}}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- EMPLOYERS TABLE -->
+  <h4>All Employers</h4>
+  <table class="table table-bordered table-hover mb-4">
+    <thead class="table-light">
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let emp of employers">
+      <td>{{emp.firstName}} {{emp.lastName}}</td>
+      <td>{{emp.email}}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" (click)="deleteEmployer(emp)">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- EMPLOYEES TABLE -->
+  <h4>All Employees</h4>
+  <table class="table table-bordered table-hover mb-4">
+    <thead class="table-light">
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let emp of employees">
+      <td>{{emp.firstName}} {{emp.lastName}}</td>
+      <td>{{emp.email}}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp)">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- APPLICATIONS TABLE -->
+  <h4>Applications</h4>
+  <table class="table table-bordered table-hover mb-4">
+    <thead class="table-light">
+    <tr>
+      <th>Employee</th>
+      <th>Job</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let app of applications">
+      <td>{{app.employeeName}}</td>
+      <td>{{app.job?.title}}</td>
+      <td>{{app.status}}</td>
+      <td>
+        <button class="btn btn-success btn-sm" [disabled]="app.status==='APPROVED'" (click)="approve(app)">
+          Approve
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+</div>

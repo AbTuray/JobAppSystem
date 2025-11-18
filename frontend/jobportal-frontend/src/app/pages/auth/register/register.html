@@ -1,0 +1,19 @@
+<div class="container mt-5" style="max-width:400px;">
+  <h3 class="mb-3">Register</h3>
+
+  <div class="mb-3">
+    <select class="form-select" [(ngModel)]="userType" name="userType">
+      <option value="employee">Employee</option>
+      <option value="employer">Employer</option>
+    </select>
+  </div>
+
+  <form #regForm="ngForm" (ngSubmit)="register()">
+    <input class="form-control mb-2" placeholder="First Name" name="firstName" [(ngModel)]="registerData.firstName" required>
+    <input class="form-control mb-2" placeholder="Last Name" name="lastName" [(ngModel)]="registerData.lastName" required>
+    <input class="form-control mb-2" type="email" placeholder="Email" name="email" [(ngModel)]="registerData.email" required>
+    <input class="form-control mb-2" type="password" placeholder="Password" name="password" [(ngModel)]="registerData.password" required>
+
+    <button class="btn btn-primary w-100" [disabled]="regForm.invalid">Register</button>
+  </form>
+</div>

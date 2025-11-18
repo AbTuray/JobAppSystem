@@ -1,0 +1,34 @@
+<div class="container mt-4">
+  <h2 class="mb-3">Employee Dashboard</h2>
+
+  <!-- SEARCH JOBS -->
+  <div class="mb-3">
+    <input class="form-control" [(ngModel)]="searchQuery" placeholder="Search jobs">
+    <button class="btn btn-primary mt-2" (click)="search()">Search</button>
+  </div>
+
+  <!-- JOBS TABLE -->
+  <h4>Available Jobs</h4>
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+    <tr>
+      <th>Title</th>
+      <th>Location</th>
+      <th>Salary</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let job of jobs">
+      <td>{{job.title}}</td>
+      <td>{{job.location}}</td>
+      <td>{{job.salary}}</td>
+      <td>
+        <button class="btn btn-success btn-sm" (click)="apply(job.id)">Apply</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- APPLICATIONS SECTION (Optional if you want to list employee applications) -->
+</div>

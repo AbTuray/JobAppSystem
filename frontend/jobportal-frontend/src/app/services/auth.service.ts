@@ -1,40 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  baseUrl = 'http://localhost:8080/api/auth';
+  private baseUrl = 'http://localhost:8080';
 
   constructor(private http: HttpClient) {}
 
-  login(data: any) {
-    return this.http.post(`${this.baseUrl}/login`, data);
-  }
-
-  registerEmployer(data: any) {
+  // Register employer
+  registerEmployer(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/register/employer`, data);
   }
 
-  registerCandidate(data: any) {
-    return this.http.post(`${this.baseUrl}/register/candidate`, data);
+  // Register employee
+  registerEmployee(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/register/employee`, data);
   }
 
-  saveUser(role: string, id: number) {
-    localStorage.setItem("role", role);
-    localStorage.setItem("userId", id.toString());
+  // Login (Spring Security handles authentication)
+  login(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/login`, data);
   }
 
-  getRole() {
-    return localStorage.getItem("role");
-  }
-
-  getUserId() {
-    const id = localStorage.getItem("userId");
-    return id ? Number(id) : null;
-  }
-
-  logout() {
-    localStorage.clear();
+  // Logout
+  logout(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/logout`, {});
   }
 }

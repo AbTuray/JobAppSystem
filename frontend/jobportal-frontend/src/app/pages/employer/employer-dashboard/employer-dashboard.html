@@ -1,0 +1,49 @@
+<div class="container mt-4">
+
+  <h2 class="mb-3">Employer Dashboard</h2>
+
+  <!-- ADD JOB BUTTON -->
+  <button class="btn btn-success mb-3" (click)="showAddForm = true">
+    ➕ Add Job
+  </button>
+
+  <!-- ADD JOB FORM -->
+  <div *ngIf="showAddForm" class="card p-3 mb-4 shadow">
+
+    <h4>Add Job</h4>
+
+    <form #jobForm="ngForm" (ngSubmit)="saveJob(jobForm)">
+      <input class="form-control mb-2" name="title" placeholder="Job Title" [(ngModel)]="newJob.title" required>
+      <input class="form-control mb-2" name="location" placeholder="Location" [(ngModel)]="newJob.location" required>
+      <input class="form-control mb-2" name="salary" placeholder="Salary" [(ngModel)]="newJob.salary" required>
+
+      <button class="btn btn-primary btn-sm" type="submit" [disabled]="jobForm.invalid">Save</button>
+      <button class="btn btn-secondary btn-sm ms-2" type="button" (click)="showAddForm=false">Cancel</button>
+    </form>
+  </div>
+
+  <!-- JOB TABLE -->
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+    <tr>
+      <th>Title</th>
+      <th>Location</th>
+      <th>Salary</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let job of jobs">
+      <td>{{job.title}}</td>
+      <td>{{job.location}}</td>
+      <td>{{job.salary}}</td>
+      <td>
+        <button class="btn btn-warning btn-sm me-2" (click)="edit(job)">✏ Edit</button>
+        <button class="btn btn-danger btn-sm" (click)="remove(job)">🗑 Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+</div>

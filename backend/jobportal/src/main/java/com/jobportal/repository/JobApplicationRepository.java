@@ -2,8 +2,10 @@ package com.jobportal.repository;
 
 import com.jobportal.entity.JobApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+@Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
     List<JobApplication> findByJobId(Long jobId);
     List<JobApplication> findByEmployeeId(Long employeeId);
